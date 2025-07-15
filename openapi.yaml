@@ -16,8 +16,8 @@ info:
     Pointez vos webhooks Mem0 vers: [URL_SERVEUR]/mem0/webhook
 
 servers:
-  - url: https://127.0.0.1
-    description: Serveur de développement local
+  - url: https://alyn-mem0-api.fly.dev
+    description: Serveur de production Fly.io
 
 paths:
   /mem0/memories:
