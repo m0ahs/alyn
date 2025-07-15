@@ -1,0 +1,188 @@
+openapi: 3.1.0
+info:
+  title: Mem0 Memory Webhook API
+  version: 1.0.0
+  description: |
+    API pour lire les mémoires reçues depuis les webhooks de Mem0.ai
+    
+    ## Endpoints disponibles:
+    - GET /mem0/memories - Récupère les mémoires stockées
+    - POST /mem0/webhook - Reçoit les webhooks de Mem0 (usage interne)
+    
+    ## Documentation Swagger:
+    Accessible sur /docs quand le serveur est démarré
+    
+    ## Configuration des webhooks Mem0:
+    Pointez vos webhooks Mem0 vers: [URL_SERVEUR]/mem0/webhook
+
+servers:
+  - url: https://127.0.0.1
+    description: Serveur de développement local
+
+paths:
+  /mem0/memories:
+    get:
+      operationId: getUserMemories
+      summary: Obtenir les mémoires d'un utilisateur
+      description: |
+        Récupère toutes les mémoires stockées pour un utilisateur spécifique.
+        Les mémoires sont reçues via les webhooks Mem0 et stockées en mémoire.
+      parameters:
+        - name: user_id
+          in: query
+          required: false
+          description: ID de l'utilisateur (par défaut "default_user")
+          schema:
+            type: string
+            default: default_user
+      responses:
+        '200':
+          description: Liste des mémoires pour l'utilisateur
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: "ok"
+                  count:
+                    type: integer
+                    description: Nombre de mémoires trouvées
+                  memories:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: string
+                          description: Identifiant unique de la mémoire
+                        memory:
+                          type: string
+                          description: Contenu de la mémoire
+                        user_id:
+                          type: string
+                          description: ID de l'utilisateur
+                        timestamp:
+                          type: string
+                          format: date-time
+                          description: Date et heure de création (ISO format)
+                      required:
+                        - id
+                        - memory
+                        - user_id
+                        - timestamp
+              example:
+                status: "ok"
+                count: 2
+                memories:
+                  - id: "mem_1"
+                    memory: "L'utilisateur préfère le café au thé"
+                    user_id: "default_user"
+                    timestamp: "2024-01-15T10:30:00.000Z"
+                  - id: "mem_2"
+                    memory: "Habite à Paris et travaille dans la tech"
+                    user_id: "default_user"
+                    timestamp: "2024-01-15T11:45:00.000Z"
+
+  /mem0/add:
+    post:
+      operationId: addMemory
+      summary: Ajouter une nouvelle mémoire
+      description: |
+        Ajoute une nouvelle mémoire pour un utilisateur spécifique.
+        Alternative à l'endpoint webhook pour ajouter des mémoires manuellement.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                memory:
+                  type: string
+                  description: Contenu de la mémoire à ajouter
+                user_id:
+                  type: string
+                  description: ID de l'utilisateur (optionnel, par défaut "default_user")
+                  default: "default_user"
+              required:
+                - memory
+              example:
+                memory: "L'utilisateur préfère les emails courts et directs"
+                user_id: "default_user"
+      responses:
+        '200':
+          description: Mémoire ajoutée avec succès
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: "ok"
+                  message:
+                    type: string
+                    example: "Memory added successfully"
+                  memory:
+                    type: object
+                    properties:
+                      id:
+                        type: string
+                      memory:
+                        type: string
+                      user_id:
+                        type: string
+                      timestamp:
+                        type: string
+                        format: date-time
+        '400':
+          description: Erreur lors de l'ajout de la mémoire
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  detail:
+                    type: string
+                    example: "Error adding memory: [description de l'erreur]"
+  
+  /mem0/webhook:
+    post:
+      operationId: receiveWebhook
+      summary: Recevoir les webhooks de Mem0
+      description: |
+        Endpoint interne pour recevoir les webhooks de Mem0.
+        Configure tes webhooks Mem0 pour pointer vers cette URL.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                id:
+                  type: string
+                  description: ID de la mémoire
+                memory:
+                  type: string
+                  description: Contenu de la mémoire
+                user_id:
+                  type: string
+                  description: ID de l'utilisateur
+              example:
+                id: "mem_123"
+                memory: "L'utilisateur aime la pizza margherita"
+                user_id: "user_456"
+      responses:
+        '200':
+          description: Webhook reçu avec succès
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: "ok"
